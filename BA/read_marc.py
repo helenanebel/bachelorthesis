@@ -10,3 +10,4 @@ with open(filestring, 'rb') as file:
     print()
     for record in new_reader:
         print(record)
+        print('quatsch')
