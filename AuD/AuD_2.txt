@@ -1,0 +1,22 @@
+# Übung 2.1
+
+binary(x) = if x = 0 then 0 else get_string(x, int(log(x)/log(2)), '')
+
+get_string(x, y, s) = if y >= 0 then
+                            if x > 2^y then get_string(x mod 2^y, y-1, S+1)
+                            else get_string(x, y-1, S+0)
+                            endif
+                      else
+                      endif
+
+# Übung 2.2
+
+ispalindrome(x) = if len(x) = 1 then True else recursion(x, 0)
+
+recursion(x, y) = if y >= len(x)/2 then True else recursion(x, y+1) and issimilar(x[y], x[len(x)-y-1])
+
+issimilar(a, b) = if a = b then True else False
+
+# Übung 2.3
+
+fibonacci(x) = if x in [1,2] then 1 else fibonacci(x-1) + fibonacci(x-2)

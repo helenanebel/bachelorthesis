@@ -1,0 +1,38 @@
+Übung 5.1
+
+a) if 15 < 21 then C:= 15 ; A:= 21 ; B:= 15
+   while B > 0 do
+        C:= 21/15 = 6 ; A:= 15 ; B:= 6
+        C:= 15/6 = 3 ; A:= 6 ; B:= 3
+        C:= 6/3 = 0 ; A:= 3 ; B:= 0
+   enddo
+
+b) ggT
+
+
+Übung 5.2
+
+a)
+X = (Z, S)
+α =
+if Z > 0 then i = int(log(X)/log(2))
+    while i >= 0  do
+        if Z >= 2^i do S := S + 1 ; Z := Z % 2^i else S := S + 0 endif;
+        i := i-1
+    enddo
+else S := 0
+endif
+output S
+
+b)
+if 9 > 0 then i = int(log(9)/log(2)) = 3;
+    while i >= 0 do
+        if 9 >= 8 do S := 1 ; Z :=  9%2^3 = 1
+        i:= 3-1 = 2
+        if 1 >= 4 ... else S := 1 + 0 = 10
+        i:= 2-1 = 1
+        if 1 >= 2 ... else S := 10 + 0 = 100
+        i:= 1-1 = 0
+        if 1 >= 1 do S := 100 + 1 = 1001 ; Z := 1%2^0 = 0
+        i := -1
+output 1001
