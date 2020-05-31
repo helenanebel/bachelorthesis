@@ -1,0 +1,34 @@
+Übung 1.1 (korrekt)
+f(a, b) = if (a>0 and b<10) then 3*5 + a*2 else 3*5 + b/5 endif
+
+Übung 1.2
+a) (korrekt)
+f(7,9) = if 7>9 then 7-9 else 9-7 endif = 9-7 = 2
+f(4,2) = if 4>2 then 4-2 else 2-4 endif = 4-2 = 2
+b) (korrekt)
+f(1,5) = if 2*1>5 then 1+3*5 else if 3>1 then 7 else 2+5 endif endif
+= if 3>1 then 7 else 2+5 endif = 7
+f(4,2) = if 2*4>2 then 1+3*2 else if 3>4 then 7 else 2+2 endif endif
+= if 8>2 then 1+3*2 endif = 1+3*2 = 7
+c)
+f(14,3) = if 14<3 then 14 else if 14-3<3 then 11 else if 11-3<3 then 8 else if 8-3<3 then 5 else if 5-3<3 then 2
+endif endif endif endif endif = 2
+f(17,5) = if 17<5 then 17 else if 17-5<5 then 12 else if 12-5<5 then 7 else if 7-5<5 then 2 endif endif endif endif = 2
+f(7,2) = if 7<2 then 7 else if 7-2<2 then 5 else if 5-2<2 then 3 else if 3-2<2 then 1
+berechnet x mod y (nicht herausgefunden)
+d)
+berechnet Quersumme. Nachkommastellen werden abgeschnitten (nicht korrekt)
+
+Übung 1.3
+a) ggT(a,b) = if a < b then ggT(a, b-a) else if b < a then ggT(b, a-b) else a endif endif
+(else a kann weggelassen werden, weil das durch a mod b abgedeckt ist.)
+
+Übung 1.4
+a) isprime(x) = if x in [1,2] then True else g(x, int(x/2))
+   g(a, b) = if b=1 then True
+             else
+                if a mod b = 0 then False
+                else g(a, b-1)
+                endif
+             endif
+
