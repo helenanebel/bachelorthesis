@@ -67,7 +67,7 @@ stop_evaluation = False
 start_evaluation = False
 
 to_test = 0
-with open('selected_records.mrc', 'rb') as selected_record_file:
+with open('selected_records_1960_adjusted.mrc', 'rb') as selected_record_file:
     with open('doublets.json', 'r') as doublet_file:
         doublets = json.load(doublet_file)
         try:
@@ -78,7 +78,7 @@ with open('selected_records.mrc', 'rb') as selected_record_file:
                     if stop_evaluation:
                         break
                     record_id = record['001'].data
-                    # print('checking record:', record_id)
+                    print('checking record:', record_id)
                     if last_checked:
                         if not start_evaluation:
                             if record_id != last_checked:
@@ -95,9 +95,10 @@ with open('selected_records.mrc', 'rb') as selected_record_file:
                                          for title in titles if title]
                     titles_word_lists = [lower_list(word_list) for word_list in titles_word_lists]
                     titles_word_lists = [[word for word in word_list
-                                          if word not in stopwords_dict[languages[titles_word_lists.index(word_list)]]]
+                                          if word not in (stopwords_dict[languages[titles_word_lists.index(word_list)]] if
+                                          languages[titles_word_lists.index(word_list)] in stopwords_dict else [])]
                                          for word_list in titles_word_lists]
-                    with open('selected_records.mrc', 'rb') as second_file:
+                    with open('selected_records_1960_adjusted.mrc', 'rb') as second_file:
                         new_reader = MARCReader(second_file, force_utf8=True)
                         for new_record in new_reader:
                             if stop_evaluation:
@@ -125,6 +126,7 @@ with open('selected_records.mrc', 'rb') as selected_record_file:
                                                                  in RegexpTokenizer(r'\w+').tokenize(title)
                                                                  if len(word)>1]
                                                                  for title in titles_for_comparison if title]
+
                             titles_for_comparison_word_lists = [lower_list(word_list) for word_list in
                                                                 titles_for_comparison_word_lists]
 
@@ -134,7 +136,9 @@ with open('selected_records.mrc', 'rb') as selected_record_file:
                                 for title_for_comparison_word_list in titles_for_comparison_word_lists:
                                     title_for_comparison_word_list = [word for word
                                                                       in title_for_comparison_word_list
-                                                                      if word not in stopwords_dict[language]]
+                                                                      if word not in (stopwords_dict[language]
+                                                                      if language in stopwords_dict else [])]
+
                                     found_words = 0
                                     for word in title_word_list:
                                         for word_for_comparison in title_for_comparison_word_list:
@@ -143,24 +147,22 @@ with open('selected_records.mrc', 'rb') as selected_record_file:
                                     title_nr += 1
                                     if found_words >= len(title_word_list)/3:
                                         to_test += 1
-                                        '''record.remove_fields('952')
+                                        record.remove_fields('952')
                                         new_record.remove_fields('952')
-                                        print(record)
-                                        print(new_record)
+                                        print()
+                                        print(record['245'])
+                                        print(record['100'])
+                                        print('------------------------------------------------------------')
+                                        print(new_record['245'])
+                                        print(new_record['100'])
                                         command_evaluable = False
                                         while not command_evaluable:
-                                            command = input('Sind diese Records Dubletten?')
-                                            if command == 'y':
-                                                doublets[record_id]['doublets'].append(new_record['001'].data)
-                                                command_evaluable = True
-                                            elif command == 'n':
+                                            command = input('Sind diese Records Dubletten? ')
+                                            if command == '':
                                                 doublets[record_id]['unrelated'].append(new_record['001'].data)
                                                 command_evaluable = True
                                             elif command == 'r':
                                                 doublets[record_id]['related'].append(new_record['001'].data)
-                                                command_evaluable = True
-                                            elif command == 'd':
-                                                doublets[record_id]['cases_of_doubt'].append(new_record['001'].data)
                                                 command_evaluable = True
                                             elif command == 'e':
                                                 stop_evaluation = True
@@ -169,7 +171,7 @@ with open('selected_records.mrc', 'rb') as selected_record_file:
                                                 print('Der eingegebene Befehl ist falsch.')
                                     else:
                                         if not stop_evaluation:
-                                            doublets[record_id]['unconfirmed_non_doublets'].append(new_record['001'].data)'''
+                                            doublets[record_id]['unconfirmed_non_doublets'].append(new_record['001'].data)
                             if not stop_evaluation:
                                 last_checked = record_id
                                 last_comparison = new_record['001'].data
@@ -180,8 +182,9 @@ with open('selected_records.mrc', 'rb') as selected_record_file:
             write_error_to_logfile.write(e)
 
 print('Anzahl der zu testenden Datensätze:', to_test)
-# with open('doublets.json', 'w') as doublet_file:
-    # json.dump(doublets, doublet_file)
 
-# with open('last_checked.json', 'w') as log_file:
-    # json.dump([last_checked, last_comparison], log_file)
+with open('doublets.json', 'w') as doublet_file:
+    json.dump(doublets, doublet_file)
+
+with open('last_checked.json', 'w') as log_file:
+    json.dump([last_checked, last_comparison], log_file)
