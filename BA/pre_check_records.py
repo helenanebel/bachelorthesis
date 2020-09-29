@@ -138,6 +138,7 @@ with open('selected_records_adjusted_delete_parts_without_proper_title.mrc', 'rb
     # with open('doublets.json', 'r') as doublet_file:
         # doublets = json.load(doublet_file)
         try:
+            print('starting')
             reader = MARCReader(selected_record_file, force_utf8=True)
             record_list = [record for record in reader]
             for rec_nr in range(0, len(record_list), 10): # Dateipfad: '/content/drive/My Drive/
@@ -145,7 +146,7 @@ with open('selected_records_adjusted_delete_parts_without_proper_title.mrc', 'rb
                 filename = 'records_checked_' + str(rec_nr)
                 file = open(filename, 'w')
                 file.close()
-                possible_doublets = [check_record.remote(record_list[i], file) for i in range(rec_nr, rec_nr + 10)]
+                possible_doublets = [check_record.remote(record_list[i], filename) for i in range(rec_nr, rec_nr + 10)]
                 possible_doublets = ray.get(possible_doublets)
                 print(possible_doublets)
                 if rec_nr % 100 == 0:
