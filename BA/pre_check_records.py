@@ -131,7 +131,7 @@ last_checked, last_comparison = json.load(log_file)
 stop_evaluation = False
 
 
-ray.init(num_cpus=8)
+ray.init(num_cpus=10)
 with open('selected_records_adjusted_delete_parts_without_proper_title.mrc', 'rb') as selected_record_file:
     # with open('doublets.json', 'r') as doublet_file:
         # doublets = json.load(doublet_file)
