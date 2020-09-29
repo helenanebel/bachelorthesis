@@ -2,6 +2,8 @@ from pymarc import MARCReader
 import math
 import write_error_to_logfile
 from nltk import RegexpTokenizer
+import nltk
+nltk.download('stopwords')
 from nltk.corpus import stopwords
 import json
 import unidecode
