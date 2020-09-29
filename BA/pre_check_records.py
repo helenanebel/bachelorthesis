@@ -66,7 +66,7 @@ def iterative_levenshtein(s, t):
 
 
 @ray.remote
-def check_record(record, filename):
+def check_record(record):
     possible_doublets = []
     try:
         record_id = record['001'].data
@@ -121,11 +121,9 @@ def check_record(record, filename):
                         title_nr += 1
                         if found_words >= len(title_word_list) / 2:
                             possible_doublets.append(new_record['001'].data)
-        with open(filename, 'a+') as file:
-            file.write({record['001'].data: possible_doublets})
     except Exception as e:
         write_error_to_logfile.write(e)
-    return possible_doublets
+    return {record['001'].data: possible_doublets}
 
 
 log_file = open('last_checked.json', 'r')
@@ -143,12 +141,12 @@ with open('selected_records_adjusted_delete_parts_without_proper_title.mrc', 'rb
             record_list = [record for record in reader]
             for rec_nr in range(0, len(record_list), 10): # Dateipfad: '/content/drive/My Drive/
                 now = datetime.now()
+                possible_doublets = [check_record.remote(record_list[i]) for i in range(rec_nr, rec_nr + 10)]
+                possible_doublet_dicts = ray.get(possible_doublets)
                 filename = 'records_checked_' + str(rec_nr)
-                file = open(filename, 'w')
-                file.close()
-                possible_doublets = [check_record.remote(record_list[i], filename) for i in range(rec_nr, rec_nr + 10)]
-                possible_doublets = ray.get(possible_doublets)
-                print(possible_doublets)
+                with open(filename, 'w') as file:
+                    for doublet_dict in possible_doublet_dicts:
+                        file.write(str(doublet_dict) + '\n')
                 if rec_nr % 100 == 0:
                     complete_file = 'records_checked_complete_' + str(rec_nr)
                     with open(complete_file, 'w') as file:
