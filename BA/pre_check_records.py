@@ -71,9 +71,9 @@ def check_record(record, filename):
     try:
         record_id = record['001'].data
         print('checking record:', record_id)
-        if record_id not in doublets:
-            doublets[record_id] = {'doublets': [], 'unrelated': [], 'cases_of_doubt': [],
-                                   'unconfirmed_non_doublets': [], 'related': []}
+        # if record_id not in doublets:
+            # doublets[record_id] = {'doublets': [], 'unrelated': [], 'cases_of_doubt': [],
+                                   # 'unconfirmed_non_doublets': [], 'related': []}
         titles = [field['a'] if field['a'] else '' for field in record.get_fields('245', '246')][:6]
         languages = [detect(title) for title in titles]
         titles = [unidecode.unidecode(title) for title in titles if title]
@@ -90,9 +90,9 @@ def check_record(record, filename):
             for new_record in new_reader:
                 if record_id == new_record['001'].data:
                     continue
-                if new_record['001'].data in doublets:
-                    if record_id not in doublets[new_record['001'].data]['unconfirmed_non_doublets']:
-                        continue
+                # if new_record['001'].data in doublets:
+                    # if record_id not in doublets[new_record['001'].data]['unconfirmed_non_doublets']:
+                        # continue
                 titles_for_comparison = [field['a'] + ' ' + field['b']
                                          if (field['b'] and field['a']) else field['a']
                                          for field in new_record.get_fields('245', '246')]
@@ -135,8 +135,8 @@ stop_evaluation = False
 
 ray.init(num_cpus=8)
 with open('selected_records_adjusted_delete_parts_without_proper_title.mrc', 'rb') as selected_record_file:
-    with open('doublets.json', 'r') as doublet_file:
-        doublets = json.load(doublet_file)
+    # with open('doublets.json', 'r') as doublet_file:
+        # doublets = json.load(doublet_file)
         try:
             reader = MARCReader(selected_record_file, force_utf8=True)
             record_list = [record for record in reader]
