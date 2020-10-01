@@ -1,0 +1,6 @@
+*.mrc
+doublets.json
+/records
+/check_zenon_for_doublets.py
+/bibliographische relevante Infos
+/find_doublets.py
