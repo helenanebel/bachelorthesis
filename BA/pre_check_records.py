@@ -85,14 +85,11 @@ def check_record(record):
                               if word not in (stopwords_dict[languages[titles_word_lists.index(word_list)]] if
                                               languages[titles_word_lists.index(word_list)] in stopwords_dict else [])]
                              for word_list in titles_word_lists]
-        with open('selected_records_adjusted_delete_parts_without_proper_title.mrc', 'rb') as second_file:
+        with open('records/selected_records_adjusted_delete_parts_without_proper_title.mrc', 'rb') as second_file:
             new_reader = MARCReader(second_file, force_utf8=True)
             for new_record in new_reader:
                 if record_id == new_record['001'].data:
                     continue
-                # if new_record['001'].data in doublets:
-                    # if record_id not in doublets[new_record['001'].data]['unconfirmed_non_doublets']:
-                        # continue
                 titles_for_comparison = [field['a'] + ' ' + field['b']
                                          if (field['b'] and field['a']) else field['a']
                                          for field in new_record.get_fields('245', '246')]
@@ -132,14 +129,12 @@ stop_evaluation = False
 
 
 ray.init(num_cpus=10)
-with open('selected_records_adjusted_delete_parts_without_proper_title.mrc', 'rb') as selected_record_file:
-    # with open('doublets.json', 'r') as doublet_file:
-        # doublets = json.load(doublet_file)
+with open('records/selected_records_adjusted_delete_parts_without_proper_title.mrc', 'rb') as selected_record_file:
         try:
             print('starting')
             reader = MARCReader(selected_record_file, force_utf8=True)
             record_list = [record for record in reader]
-            for rec_nr in range(0, len(record_list), 10): # Dateipfad: '/content/drive/My Drive/
+            for rec_nr in range(0, len(record_list), 10):
                 now = datetime.now()
                 possible_doublets = [check_record.remote(record_list[i]) for i in range(rec_nr, rec_nr + 10)]
                 possible_doublet_dicts = ray.get(possible_doublets)
@@ -147,15 +142,6 @@ with open('selected_records_adjusted_delete_parts_without_proper_title.mrc', 'rb
                 with open(filename, 'w') as file:
                     for doublet_dict in possible_doublet_dicts:
                         file.write(str(doublet_dict) + '\n')
-                if rec_nr % 100 == 0:
-                    complete_file = 'records_checked_complete_' + str(rec_nr)
-                    '''with open(complete_file, 'w') as file:
-                        for record_file in os.listdir(''):
-                            if 'complete' not in record_file:
-                                if int(record_file.replace('records_checked_', '')) > rec_nr - 100:
-                                    with open(record_file, 'r') as readfile:
-                                        to_write = readfile.read()
-                                        file.write(to_write)'''
 
         except Exception as e:
             write_error_to_logfile.write(e)
