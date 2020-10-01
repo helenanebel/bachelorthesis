@@ -1,3 +1,4 @@
+from pymarc import Record
 from pymarc import MARCReader
 import math
 import write_error_to_logfile
@@ -67,7 +68,7 @@ stop_evaluation = False
 start_evaluation = False
 
 to_test = 0
-with open('selected_records_1960_adjusted.mrc', 'rb') as selected_record_file:
+with open('records/selected_records_1960_adjusted.mrc', 'rb') as selected_record_file:
     with open('doublets.json', 'r') as doublet_file:
         doublets = json.load(doublet_file)
         try:
@@ -86,8 +87,7 @@ with open('selected_records_1960_adjusted.mrc', 'rb') as selected_record_file:
                     if record_id not in doublets:
                         doublets[record_id] = {'doublets': [], 'unrelated': [], 'cases_of_doubt': [],
                                                'unconfirmed_non_doublets': [], 'related': []}
-                    titles = [field['a'] + ' ' + field['b'] if field['b'] else field['a']
-                              for field in record.get_fields('245', '246')]
+                    titles = [field['a'] if field['a'] else '' for field in record.get_fields('245', '246')][:6]
                     languages = [detect(title) for title in titles]
                     titles = [unidecode.unidecode(title) for title in titles if title]
                     titles_word_lists = [[word for word
@@ -98,7 +98,7 @@ with open('selected_records_1960_adjusted.mrc', 'rb') as selected_record_file:
                                           if word not in (stopwords_dict[languages[titles_word_lists.index(word_list)]] if
                                           languages[titles_word_lists.index(word_list)] in stopwords_dict else [])]
                                          for word_list in titles_word_lists]
-                    with open('selected_records_1960_adjusted.mrc', 'rb') as second_file:
+                    with open('records/selected_records_1960_adjusted.mrc', 'rb') as second_file:
                         new_reader = MARCReader(second_file, force_utf8=True)
                         for new_record in new_reader:
                             if stop_evaluation:
@@ -145,7 +145,7 @@ with open('selected_records_1960_adjusted.mrc', 'rb') as selected_record_file:
                                             if iterative_levenshtein(word, word_for_comparison) <= len(word)/3:
                                                 found_words += 1
                                     title_nr += 1
-                                    if found_words >= len(title_word_list)/3:
+                                    if found_words >= len(title_word_list)/2:
                                         to_test += 1
                                         record.remove_fields('952')
                                         new_record.remove_fields('952')
