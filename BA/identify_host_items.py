@@ -15,7 +15,7 @@ def identify_host_items():
     last_item = get_last_item()
     print(last_item)
 
-    with open('selected_records_1960.mrc', 'rb') as original_file:
+    with open('records/selected_records_1960.mrc', 'rb') as original_file:
         try:
             reader = MARCReader(original_file, force_utf8=True)
             start_evaluation = False
