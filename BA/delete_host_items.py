@@ -81,9 +81,9 @@ def delete_host_items():
 def delete_articles_and_volumes():
     with open('dependent_host_items_to_delete.json', 'r') as host_item_file:
         host_item_list = json.load(host_item_file)
-    with open('selected_records_1960_adjusted.mrc', 'wb') as file_to_write:
+    with open('records/selected_records_1960_adjusted.mrc', 'wb') as file_to_write:
         records_processed = 0
-        with open('selected_records_1960.mrc', 'rb') as file:
+        with open('records/selected_records_1960.mrc', 'rb') as file:
             try:
                 reader = MARCReader(file, force_utf8=True)
                 for record in reader:
