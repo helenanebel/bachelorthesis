@@ -126,19 +126,19 @@ def check_record(record):
 start_evaluation = False
 starting_record_nr = '000000004'
 
-ray.init(num_cpus=15)
+ray.init(num_cpus=20)
 with open('records/selected_records_adjusted_delete_parts_without_proper_title.mrc', 'rb') as selected_record_file:
         try:
             print('starting')
             reader = MARCReader(selected_record_file, force_utf8=True)
             record_list = [record for record in reader]
-            for rec_nr in range(0, len(record_list), 15):
-                print([record_list[i] for i in range(rec_nr, rec_nr + 15)])
-                if starting_record_nr in [record_list[i] for i in range(rec_nr, rec_nr + 15)]:
+            for rec_nr in range(0, len(record_list), 20):
+                print([record_list[i]['001'].data for i in range(rec_nr, rec_nr + 20)])
+                if starting_record_nr in [record_list[i] for i in range(rec_nr, rec_nr + 20)]:
                     start_evaluation = True
                 if start_evaluation:
                     now = datetime.now()
-                    possible_doublets = [check_record.remote(record_list[i]) for i in range(rec_nr, rec_nr + 15)]
+                    possible_doublets = [check_record.remote(record_list[i]) for i in range(rec_nr, rec_nr + 20)]
                     possible_doublet_dicts = ray.get(possible_doublets)
                     filename = 'records_checked_' + str(rec_nr)
                     with open(filename, 'w') as file:
