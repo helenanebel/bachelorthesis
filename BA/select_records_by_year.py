@@ -4,7 +4,7 @@ import re
 import os
 
 count = 0
-with open('selected_records_1960.mrc', 'wb') as selected_record_file:
+with open('records/selected_records_1960.mrc', 'wb') as selected_record_file:
     for filestring in os.listdir('C:/Users/Helena_Nebel/Desktop/Zenon_Daten'):
         with open('C:/Users/Helena_Nebel/Desktop/Zenon_Daten/' + filestring, 'rb') as file:
             try:
