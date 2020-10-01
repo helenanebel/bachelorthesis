@@ -123,25 +123,26 @@ def check_record(record):
     return {record['001'].data: possible_doublets}
 
 
-log_file = open('last_checked.json', 'r')
-last_checked, last_comparison = json.load(log_file)
-stop_evaluation = False
+start_evaluation = False
+starting_record_nr = ''
 
-
-ray.init(num_cpus=10)
+ray.init(num_cpus=20)
 with open('records/selected_records_adjusted_delete_parts_without_proper_title.mrc', 'rb') as selected_record_file:
         try:
             print('starting')
             reader = MARCReader(selected_record_file, force_utf8=True)
             record_list = [record for record in reader]
-            for rec_nr in range(0, len(record_list), 10):
-                now = datetime.now()
-                possible_doublets = [check_record.remote(record_list[i]) for i in range(rec_nr, rec_nr + 10)]
-                possible_doublet_dicts = ray.get(possible_doublets)
-                filename = 'records_checked_' + str(rec_nr)
-                with open(filename, 'w') as file:
-                    for doublet_dict in possible_doublet_dicts:
-                        file.write(str(doublet_dict) + '\n')
+            for rec_nr in range(0, len(record_list), 20):
+                if starting_record_nr in [record_list[i] for i in range(rec_nr, rec_nr + 20)]:
+                    start_evaluation = True
+                if start_evaluation:
+                    now = datetime.now()
+                    possible_doublets = [check_record.remote(record_list[i]) for i in range(rec_nr, rec_nr + 20)]
+                    possible_doublet_dicts = ray.get(possible_doublets)
+                    filename = 'records_checked_' + str(rec_nr)
+                    with open(filename, 'w') as file:
+                        for doublet_dict in possible_doublet_dicts:
+                            file.write(str(doublet_dict) + '\n')
 
         except Exception as e:
             write_error_to_logfile.write(e)
