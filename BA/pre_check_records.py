@@ -149,13 +149,13 @@ with open('selected_records_adjusted_delete_parts_without_proper_title.mrc', 'rb
                         file.write(str(doublet_dict) + '\n')
                 if rec_nr % 100 == 0:
                     complete_file = 'records_checked_complete_' + str(rec_nr)
-                    with open(complete_file, 'w') as file:
+                    '''with open(complete_file, 'w') as file:
                         for record_file in os.listdir(''):
                             if 'complete' not in record_file:
                                 if int(record_file.replace('records_checked_', '')) > rec_nr - 100:
                                     with open(record_file, 'r') as readfile:
                                         to_write = readfile.read()
-                                        file.write(to_write)
+                                        file.write(to_write)'''
 
         except Exception as e:
             write_error_to_logfile.write(e)
