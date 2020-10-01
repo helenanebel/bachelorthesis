@@ -133,6 +133,7 @@ with open('records/selected_records_adjusted_delete_parts_without_proper_title.m
             reader = MARCReader(selected_record_file, force_utf8=True)
             record_list = [record for record in reader]
             for rec_nr in range(0, len(record_list), 15):
+                print([record_list[i] for i in range(rec_nr, rec_nr + 15)])
                 if starting_record_nr in [record_list[i] for i in range(rec_nr, rec_nr + 15)]:
                     start_evaluation = True
                 if start_evaluation:
