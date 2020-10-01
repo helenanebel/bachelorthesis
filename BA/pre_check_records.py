@@ -124,7 +124,7 @@ def check_record(record):
 
 
 start_evaluation = False
-starting_record_nr = '000000004'
+starting_record_nr = '000013665'
 
 ray.init(num_cpus=20)
 with open('records/selected_records_adjusted_delete_parts_without_proper_title.mrc', 'rb') as selected_record_file:
