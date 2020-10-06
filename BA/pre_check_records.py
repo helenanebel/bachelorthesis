@@ -5,12 +5,11 @@ from nltk import RegexpTokenizer
 import nltk
 nltk.download('stopwords')
 from nltk.corpus import stopwords
-import json
 import unidecode
 from langdetect import detect
 import ray
 from datetime import datetime
-import os
+import re
 
 stopwords_dict = {'de': stopwords.words('german'), 'en': stopwords.words('english'), 'fr': stopwords.words('french'),
                   'es': stopwords.words('spanish'), 'it': stopwords.words('italian'), 'nl': stopwords.words('dutch')}
@@ -71,9 +70,6 @@ def check_record(record):
     try:
         record_id = record['001'].data
         print('checking record:', record_id)
-        # if record_id not in doublets:
-            # doublets[record_id] = {'doublets': [], 'unrelated': [], 'cases_of_doubt': [],
-                                   # 'unconfirmed_non_doublets': [], 'related': []}
         titles = [field['a'] if field['a'] else '' for field in record.get_fields('245', '246')][:6]
         languages = [detect(title) for title in titles]
         titles = [unidecode.unidecode(title) for title in titles if title]
@@ -85,64 +81,75 @@ def check_record(record):
                               if word not in (stopwords_dict[languages[titles_word_lists.index(word_list)]] if
                                               languages[titles_word_lists.index(word_list)] in stopwords_dict else [])]
                              for word_list in titles_word_lists]
-        with open('records/selected_records_adjusted_delete_parts_without_proper_title.mrc', 'rb') as second_file:
+        with open('records/records_in_date_range.mrc', 'rb') as second_file:
             new_reader = MARCReader(second_file, force_utf8=True)
             for new_record in new_reader:
                 if record_id == new_record['001'].data:
                     continue
-                titles_for_comparison = [field['a'] + ' ' + field['b']
-                                         if (field['b'] and field['a']) else field['a']
-                                         for field in new_record.get_fields('245', '246')]
-                titles_for_comparison = [unidecode.unidecode(title) for title in titles_for_comparison if title]
-                titles_for_comparison_word_lists = [[word for word
-                                                     in RegexpTokenizer(r'\w+').tokenize(title)
-                                                     if len(word) > 1]
-                                                    for title in titles_for_comparison if title]
+                check_title = False
+                record_dates = [date for field in record.get_fields('260', '264')
+                                for field_c in field.get_subfields('c') for date in re.findall(r'\d{4}', field_c)]
+                new_record_dates = [date for field in new_record.get_fields('260', '264')
+                                for field_c in field.get_subfields('c') for date in re.findall(r'\d{4}', field_c)]
+                for date in record_dates:
+                    if any([(int(new_date) in range(int(date)-1, int(date)+2)) for new_date in new_record_dates]):
+                        check_title = True
+                if not record_dates:
+                    check_title = True
+                if check_title:
+                    titles_for_comparison = [field['a'] + ' ' + field['b']
+                                             if (field['b'] and field['a']) else field['a']
+                                             for field in new_record.get_fields('245', '246')]
+                    titles_for_comparison = [unidecode.unidecode(title) for title in titles_for_comparison if title]
+                    titles_for_comparison_word_lists = [[word for word
+                                                         in RegexpTokenizer(r'\w+').tokenize(title)
+                                                         if len(word) > 1]
+                                                        for title in titles_for_comparison if title]
 
-                titles_for_comparison_word_lists = [lower_list(word_list) for word_list in
-                                                    titles_for_comparison_word_lists]
+                    titles_for_comparison_word_lists = [lower_list(word_list) for word_list in
+                                                        titles_for_comparison_word_lists]
 
-                title_nr = 0
-                for title_word_list in titles_word_lists:
-                    language = languages[title_nr]
-                    for title_for_comparison_word_list in titles_for_comparison_word_lists:
-                        title_for_comparison_word_list = [word for word
-                                                          in title_for_comparison_word_list
-                                                          if word not in (stopwords_dict[language]
-                                                                          if language in stopwords_dict else [])]
-                        found_words = 0
-                        for word in title_word_list:
-                            for word_for_comparison in title_for_comparison_word_list:
-                                if iterative_levenshtein(word, word_for_comparison) <= len(word) / 3:
-                                    found_words += 1
-                        title_nr += 1
-                        if found_words >= len(title_word_list) / 2:
-                            possible_doublets.append(new_record['001'].data)
+                    title_nr = 0
+                    for title_word_list in titles_word_lists:
+                        language = languages[title_nr]
+                        for title_for_comparison_word_list in titles_for_comparison_word_lists:
+                            title_for_comparison_word_list = [word for word
+                                                              in title_for_comparison_word_list
+                                                              if word not in (stopwords_dict[language]
+                                                                              if language in stopwords_dict else [])]
+                            found_words = 0
+                            for word in title_word_list:
+                                for word_for_comparison in title_for_comparison_word_list:
+                                    if iterative_levenshtein(word, word_for_comparison) <= len(word) / 3:
+                                        found_words += 1
+                            title_nr += 1
+                            if found_words >= len(title_word_list) / 2:
+                                possible_doublets.append(new_record['001'].data)
     except Exception as e:
         write_error_to_logfile.write(e)
     return {record['001'].data: possible_doublets}
 
 
 start_evaluation = False
-starting_record_nr = '000013665'
+starting_record_nr = '000106797'
 
-ray.init(num_cpus=20)
-with open('records/selected_records_adjusted_delete_parts_without_proper_title.mrc', 'rb') as selected_record_file:
-        try:
-            print('starting')
-            reader = MARCReader(selected_record_file, force_utf8=True)
-            record_list = [record for record in reader]
-            for rec_nr in range(0, len(record_list), 20):
-                if starting_record_nr in [record_list[i]['001'].data for i in range(rec_nr, rec_nr + 20)]:
-                    start_evaluation = True
-                if start_evaluation:
-                    now = datetime.now()
-                    possible_doublets = [check_record.remote(record_list[i]) for i in range(rec_nr, rec_nr + 20)]
-                    possible_doublet_dicts = ray.get(possible_doublets)
-                    filename = 'records_checked_' + str(rec_nr)
-                    with open(filename, 'w') as file:
-                        for doublet_dict in possible_doublet_dicts:
-                            file.write(str(doublet_dict) + '\n')
+ray.init(num_cpus=15)
+with open('records/records_in_date_range.mrc', 'rb') as selected_record_file:
+    try:
+        print('starting')
+        reader = MARCReader(selected_record_file, force_utf8=True)
+        record_list = [record for record in reader]
+        for rec_nr in range(0, len(record_list), 15):
+            if starting_record_nr in [record_list[i]['001'].data for i in range(rec_nr, rec_nr + 15)]:
+                start_evaluation = True
+            if start_evaluation:
+                now = datetime.now()
+                possible_doublets = [check_record.remote(record_list[i]) for i in range(rec_nr, rec_nr + 15)]
+                possible_doublet_dicts = ray.get(possible_doublets)
+                filename = 'records_checked_' + str(rec_nr)
+                with open(filename, 'w') as file:
+                    for doublet_dict in possible_doublet_dicts:
+                        file.write(str(doublet_dict) + '\n')
 
-        except Exception as e:
-            write_error_to_logfile.write(e)
+    except Exception as e:
+        write_error_to_logfile.write(e)
