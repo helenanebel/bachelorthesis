@@ -70,7 +70,7 @@ def check_record(record):
     try:
         record_id = record['001'].data
         print('checking record:', record_id)
-        titles = [field['a'] if field['a'] else '' for field in record.get_fields('245', '246')][:6]
+        titles = [field['a'] if field['a'] else '' for field in record.get_fields('245', '246')]
         languages = [detect(title) for title in titles]
         titles = [unidecode.unidecode(title) for title in titles if title]
         titles_word_lists = [[word for word
@@ -79,7 +79,7 @@ def check_record(record):
         titles_word_lists = [lower_list(word_list) for word_list in titles_word_lists]
         titles_word_lists = [[word for word in word_list
                               if word not in (stopwords_dict[languages[titles_word_lists.index(word_list)]] if
-                                              languages[titles_word_lists.index(word_list)] in stopwords_dict else [])]
+                                              languages[titles_word_lists.index(word_list)] in stopwords_dict else [])][:7]
                              for word_list in titles_word_lists]
         with open('records/records_in_date_range.mrc', 'rb') as second_file:
             new_reader = MARCReader(second_file, force_utf8=True)
