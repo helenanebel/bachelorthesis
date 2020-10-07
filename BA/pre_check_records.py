@@ -71,7 +71,10 @@ def check_record(record):
         record_id = record['001'].data
         print('checking record:', record_id)
         titles = [field['a'] if field['a'] else '' for field in record.get_fields('245', '246')]
-        languages = [detect(title) for title in titles]
+        try:
+            languages = [detect(title) for title in titles]
+        except:
+            languages = ['xx' for title in titles]
         titles = [unidecode.unidecode(title) for title in titles if title]
         titles_word_lists = [[word for word
                               in RegexpTokenizer(r'\w+').tokenize(title) if len(word) > 1]
@@ -111,7 +114,10 @@ def check_record(record):
 
                     title_nr = 0
                     for title_word_list in titles_word_lists:
-                        language = languages[title_nr]
+                        try:
+                            language = languages[title_nr]
+                        except:
+                            language = 'xx'
                         for title_for_comparison_word_list in titles_for_comparison_word_lists:
                             title_for_comparison_word_list = [word for word
                                                               in title_for_comparison_word_list
@@ -156,4 +162,4 @@ with open('records/records_in_date_range.mrc', 'rb') as selected_record_file:
         write_error_to_logfile.write(e)
 
 # neues Vorgehen mit reduzierter Listenlänge ab 000106797
-# Vorgehen mit Problemdokumentation ab AR011026178
+# Vorgehen mit Problemdokumentation ab AR011026178 (auf dem remote-Rechner)
