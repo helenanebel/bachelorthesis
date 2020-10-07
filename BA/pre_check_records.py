@@ -127,11 +127,12 @@ def check_record(record):
                                 possible_doublets.append(new_record['001'].data)
     except Exception as e:
         write_error_to_logfile.write(e)
+        possible_doublets.append('problem')
     return {record['001'].data: possible_doublets}
 
 
 start_evaluation = False
-starting_record_nr = '000106797'
+starting_record_nr = 'AR011026178'
 
 ray.init(num_cpus=15)
 with open('records/records_in_date_range.mrc', 'rb') as selected_record_file:
@@ -153,3 +154,6 @@ with open('records/records_in_date_range.mrc', 'rb') as selected_record_file:
 
     except Exception as e:
         write_error_to_logfile.write(e)
+
+# neues Vorgehen mit reduzierter Listenlänge ab 000106797
+# Vorgehen mit Problemdokumentation ab AR011026178
