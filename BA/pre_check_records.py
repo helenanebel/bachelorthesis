@@ -97,7 +97,7 @@ def check_record(record, files_to_check):
                             title_for_comparison = unidecode.unidecode(title_for_comparison)
                             title_for_comparison_word_list = lower_list([word for word
                                                                  in RegexpTokenizer(r'\w+').tokenize(title_for_comparison)
-                                                                 if len(word) > 1])
+                                                                 if len(word) > 1][:10])
                             found_words = 0
                             for word in title_word_list:
                                 for word_for_comparison in title_for_comparison_word_list:
