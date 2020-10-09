@@ -115,7 +115,7 @@ def check_record(record, files_to_check):
 start_evaluation = True
 # starting_record_nr = 'AR011026178'
 
-ray.init(num_cpus=4)
+ray.init(num_cpus=17)
 for record_file_name in os.listdir('records_blocked'):
     print(record_file_name)
     if re.findall(r'\d{4}', record_file_name):
@@ -130,12 +130,12 @@ for record_file_name in os.listdir('records_blocked'):
             print('starting')
             reader = MARCReader(selected_record_file, force_utf8=True)
             record_list = [record for record in reader]
-            for rec_nr in range(0, len(record_list), 4):
+            for rec_nr in range(0, len(record_list), 17):
                 # if starting_record_nr in [record_list[i]['001'].data for i in range(rec_nr, rec_nr + 15)]:
                     # start_evaluation = True
                 if start_evaluation:
                     now = datetime.now()
-                    possible_doublets = [check_record.remote(record_list[i], files_to_check) for i in range(rec_nr, rec_nr + 4)]
+                    possible_doublets = [check_record.remote(record_list[i], files_to_check) for i in range(rec_nr, rec_nr + 17)]
                     possible_doublet_dicts = ray.get(possible_doublets)
                     filename = 'records_checked_' + str(rec_nr)
                     with open(filename, 'w') as file:
