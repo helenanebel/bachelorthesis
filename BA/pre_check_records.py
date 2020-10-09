@@ -99,11 +99,18 @@ def check_record(record, files_to_check):
                                                                  in RegexpTokenizer(r'\w+').tokenize(title_for_comparison)
                                                                  if len(word) > 1][:10])
                             found_words = 0
+                            sufficient_word_number = int(len(title_word_list) / 2)
                             for word in title_word_list:
+                                if found_words == sufficient_word_number:
+                                    break
                                 for word_for_comparison in title_for_comparison_word_list:
                                     if iterative_levenshtein(word, word_for_comparison) <= (len(word) / 3):
                                         found_words += 1
+                                        break
                             if found_words >= int(len(title_word_list) / 2):
+                                print(title_word_list)
+                                print(title_for_comparison_word_list)
+                                print(found_words)
                                 possible_doublets.append(new_record['001'].data)
                                 break
     except Exception as e:
