@@ -41,7 +41,7 @@ def iterative_levenshtein(s, t):
 
 
 @ray.remote
-def check_record(record, result_dict):
+def check_record(record):
     possible_doublets = []
     try:
         record_id = record['001'].data
@@ -61,9 +61,6 @@ def check_record(record, result_dict):
             for new_record in new_reader:
                 if record_id == new_record['001'].data:
                     continue
-                if new_record['001'].data in result_dict:
-                    if record_id in result_dict[new_record['001'].data]:
-                        continue
                 titles_for_comparison = [field['a'] + ' ' + field['b']
                                              if (field['b'] and field['a']) else field['a']
                                              for field in new_record.get_fields('245', '246')]
@@ -97,9 +94,6 @@ def check_record(record, result_dict):
 
 start_evaluation = True
 # starting_record_nr = 'AR011026178'
-result_file = open('records_checked.json', 'r')
-result_dict = json.load(result_file)
-result_file.close()
 
 ray.init(num_cpus=15)
 for record_file_name in os.listdir('records_blocked'):
@@ -121,16 +115,12 @@ for record_file_name in os.listdir('records_blocked'):
                         # start_evaluation = True
                     if start_evaluation:
                         now = datetime.now()
-                        possible_doublets = [check_record.remote(record_list[i], result_dict) for i in range(rec_nr, rec_nr + 15)]
+                        possible_doublets = [check_record.remote(record_list[i]) for i in range(rec_nr, rec_nr + 15)]
                         possible_doublet_dicts = ray.get(possible_doublets)
                         for doublet_dict in possible_doublet_dicts:
-                            for rec in doublet_dict:
-                                result_dict[rec] = doublet_dict[rec]
                             filename = 'records_checked_' + str(rec_nr)
                             with open(filename, 'w') as file:
                                 file.write(str(doublet_dict) + '\n')
-                        with open('records_checked.json', 'w') as result_file:
-                            json.dump(result_dict, result_file)
             except Exception as e:
                 write_error_to_logfile.write(e)
 
