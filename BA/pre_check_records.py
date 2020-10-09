@@ -101,6 +101,8 @@ def check_record(record, files_to_check):
                                                                  if len(word) > 1][:10])
                             found_words = 0
                             sufficient_word_number = int(len(title_word_list) / 2)
+                            if not sufficient_word_number:
+                                sufficient_word_number = 1
                             for word in title_word_list:
                                 if found_words == sufficient_word_number:
                                     break
@@ -108,7 +110,7 @@ def check_record(record, files_to_check):
                                     if iterative_levenshtein(word, word_for_comparison) <= (len(word) / 3):
                                         found_words += 1
                                         break
-                            if found_words >= int(len(title_word_list) / 2):
+                            if found_words >= sufficient_word_number:
                                 possible_doublets.append(new_record['001'].data)
                                 break
     except Exception as e:
