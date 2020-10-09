@@ -64,6 +64,7 @@ def iterative_levenshtein(s, t, costs=(1, 1, 1)):
         return dist[row][col]
     except Exception as e:
         write_error_to_logfile.write(e)
+        return 0
 
 
 @ray.remote
@@ -108,9 +109,6 @@ def check_record(record, files_to_check):
                                         found_words += 1
                                         break
                             if found_words >= int(len(title_word_list) / 2):
-                                print(title_word_list)
-                                print(title_for_comparison_word_list)
-                                print(found_words)
                                 possible_doublets.append(new_record['001'].data)
                                 break
     except Exception as e:
