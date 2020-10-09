@@ -117,9 +117,9 @@ for record_file_name in os.listdir('records_blocked'):
                         now = datetime.now()
                         possible_doublets = [check_record.remote(record_list[i]) for i in range(rec_nr, rec_nr + 15)]
                         possible_doublet_dicts = ray.get(possible_doublets)
-                        for doublet_dict in possible_doublet_dicts:
-                            filename = 'records_checked_' + str(rec_nr)
-                            with open(filename, 'w') as file:
+                        filename = 'records_checked_' + str(rec_nr)
+                        with open(filename, 'w') as file:
+                            for doublet_dict in possible_doublet_dicts:
                                 file.write(str(doublet_dict) + '\n')
             except Exception as e:
                 write_error_to_logfile.write(e)
