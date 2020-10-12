@@ -138,17 +138,27 @@ for record_file_name in os.listdir('records_blocked'):
             reader = MARCReader(selected_record_file, force_utf8=True)
             record_list = [record for record in reader]
             for rec_nr in range(0, len(record_list), 17):
-                # if starting_record_nr in [record_list[i]['001'].data for i in range(rec_nr, rec_nr + 15)]:
-                    # start_evaluation = True
                 if start_evaluation:
-                    now = datetime.now()
-                    possible_doublets = [check_record.remote(record_list[i], files_to_check) for i in range(rec_nr, rec_nr + 17)]
-                    possible_doublet_dicts = ray.get(possible_doublets)
-                    record_file_name = record_file_name.replace('.mrc', '')
-                    filename = record_file_name + '_' + str(rec_nr)
-                    with open(filename, 'w') as file:
-                        for doublet_dict in possible_doublet_dicts:
-                            file.write(str(doublet_dict) + '\n')
+                    if (rec_nr + 17) >= (len(record_list)):
+                        print(len(record_list), rec_nr)
+                        now = datetime.now()
+                        possible_doublets = [check_record.remote(record_list[i], files_to_check) for i in
+                                             range(rec_nr, len(record_list) - 1)]
+                        possible_doublet_dicts = ray.get(possible_doublets)
+                        record_file_name = record_file_name.replace('.mrc', '')
+                        filename = record_file_name + '_' + str(rec_nr)
+                        with open(filename, 'w') as file:
+                            for doublet_dict in possible_doublet_dicts:
+                                file.write(str(doublet_dict) + '\n')
+                    '''else:
+                        now = datetime.now()
+                        possible_doublets = [check_record.remote(record_list[i], files_to_check) for i in range(rec_nr, rec_nr + 17)]
+                        possible_doublet_dicts = ray.get(possible_doublets)
+                        record_file_name = record_file_name.replace('.mrc', '')
+                        filename = record_file_name + '_' + str(rec_nr)
+                        with open(filename, 'w') as file:
+                            for doublet_dict in possible_doublet_dicts:
+                                file.write(str(doublet_dict) + '\n')'''
         except Exception as e:
             write_error_to_logfile.write(e)
 
