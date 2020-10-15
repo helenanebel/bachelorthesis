@@ -141,9 +141,11 @@ for record_file_name in os.listdir('records_blocked'):
                 if start_evaluation:
                     if (rec_nr + 17) >= (len(record_list)):
                         print(rec_nr)
+                        print([record_list[i] for i in range(rec_nr, len(record_list) - 1)])
                         possible_doublets = [check_record.remote(record_list[i], files_to_check) for i in
                                              range(rec_nr, len(record_list) - 1)]
                         possible_doublet_dicts = ray.get(possible_doublets)
+                        print(possible_doublet_dicts)
                         record_file_name = record_file_name.replace('.mrc', '')
                         filename = record_file_name + '_' + str(rec_nr)
                         with open(filename, 'w') as file:
@@ -161,3 +163,4 @@ for record_file_name in os.listdir('records_blocked'):
                                 file.write(str(doublet_dict) + '\n')
         except Exception as e:
             write_error_to_logfile.write(e)
+            print(e)
