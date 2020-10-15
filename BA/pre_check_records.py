@@ -71,7 +71,7 @@ def check_record(record, files_to_check):
     possible_doublets = []
     try:
         record_id = record['001'].data
-        print('checking record:', record_id)
+        # print('checking record:', record_id)
         title = [field['a'] if field['a'] else '' for field in record.get_fields('245')][0] if record.get_fields('245') else ''
         title_for_language_detection = [field['a'] + ' ' + field['b'] if (field['a'] and field['b']) else field['a'] if field['a'] else '' for field in record.get_fields('245')][0] if record.get_fields('245') else ''
         try:
@@ -84,7 +84,7 @@ def check_record(record, files_to_check):
                               if word not in (stopwords_dict[language] if
                                               language in stopwords_dict else [])][:7]
         for file in files_to_check:
-            print(file)
+            # print(file)
             with open('records_blocked/' + file, 'rb') as second_file:
                 new_reader = MARCReader(second_file, force_utf8=True)
                 for new_record in new_reader:
@@ -124,7 +124,7 @@ start_evaluation = True
 
 ray.init(num_cpus=18)
 for record_file_name in os.listdir('records_blocked'):
-    print(record_file_name)
+    # print(record_file_name)
     if re.findall(r'\d{4}', record_file_name):
         date = re.findall(r'\d{4}', record_file_name)[0]
         files_to_check = ['records_' + str(year) + '.mrc'
@@ -139,8 +139,8 @@ for record_file_name in os.listdir('records_blocked'):
             record_list = [record for record in reader]
             for rec_nr in range(0, len(record_list), 18):
                 if start_evaluation:
-                    if (rec_nr + 18) >= (len(record_list)):
-                        now = datetime.now()
+                    if (rec_nr + 17) >= (len(record_list)):
+                        print(rec_nr)
                         possible_doublets = [check_record.remote(record_list[i], files_to_check) for i in
                                              range(rec_nr, len(record_list) - 1)]
                         possible_doublet_dicts = ray.get(possible_doublets)
@@ -148,6 +148,7 @@ for record_file_name in os.listdir('records_blocked'):
                         filename = record_file_name + '_' + str(rec_nr)
                         with open(filename, 'w') as file:
                             for doublet_dict in possible_doublet_dicts:
+                                print(doublet_dict)
                                 file.write(str(doublet_dict) + '\n')
                     else:
                         possible_doublets = [check_record.remote(record_list[i], files_to_check) 
