@@ -8,7 +8,6 @@ from langdetect import detect
 import ray
 from datetime import datetime
 import re
-import json
 
 stopwords_dict = {'de': stopwords.words('german'), 'en': stopwords.words('english'), 'fr': stopwords.words('french'),
                   'es': stopwords.words('spanish'), 'it': stopwords.words('italian'), 'nl': stopwords.words('dutch')}
@@ -74,8 +73,9 @@ def check_record(record, files_to_check):
         record_id = record['001'].data
         print('checking record:', record_id)
         title = [field['a'] if field['a'] else '' for field in record.get_fields('245')][0] if record.get_fields('245') else ''
+        title_for_language_detection = [field['a'] + ' ' + field['b'] if (field['a'] and field['b']) else field['a'] if field['a'] else '' for field in record.get_fields('245')][0] if record.get_fields('245') else ''
         try:
-            language = detect(title)
+            language = detect(title_for_language_detection)
         except:
             language = 'xx'
         title = unidecode.unidecode(title)
@@ -122,7 +122,7 @@ def check_record(record, files_to_check):
 start_evaluation = True
 # starting_record_nr = 'AR011026178'
 
-ray.init(num_cpus=17)
+ray.init(num_cpus=4)
 for record_file_name in os.listdir('records_blocked'):
     print(record_file_name)
     if re.findall(r'\d{4}', record_file_name):
@@ -137,10 +137,9 @@ for record_file_name in os.listdir('records_blocked'):
             print('starting')
             reader = MARCReader(selected_record_file, force_utf8=True)
             record_list = [record for record in reader]
-            for rec_nr in range(0, len(record_list), 17):
+            for rec_nr in range(0, len(record_list), 4):
                 if start_evaluation:
-                    if (rec_nr + 17) >= (len(record_list)):
-                        print(len(record_list), rec_nr)
+                    if (rec_nr + 4) >= (len(record_list)):
                         now = datetime.now()
                         possible_doublets = [check_record.remote(record_list[i], files_to_check) for i in
                                              range(rec_nr, len(record_list) - 1)]
@@ -150,21 +149,14 @@ for record_file_name in os.listdir('records_blocked'):
                         with open(filename, 'w') as file:
                             for doublet_dict in possible_doublet_dicts:
                                 file.write(str(doublet_dict) + '\n')
-                    '''else:
-                        now = datetime.now()
-                        possible_doublets = [check_record.remote(record_list[i], files_to_check) for i in range(rec_nr, rec_nr + 17)]
+                    else:
+                        possible_doublets = [check_record.remote(record_list[i], files_to_check) 
+                        for i in range(rec_nr, rec_nr + 4)]
                         possible_doublet_dicts = ray.get(possible_doublets)
                         record_file_name = record_file_name.replace('.mrc', '')
                         filename = record_file_name + '_' + str(rec_nr)
                         with open(filename, 'w') as file:
                             for doublet_dict in possible_doublet_dicts:
-                                file.write(str(doublet_dict) + '\n')'''
+                                file.write(str(doublet_dict) + '\n')
         except Exception as e:
             write_error_to_logfile.write(e)
-
-# neues Vorgehen mit reduzierter Listenlänge ab 000106797
-# Vorgehen mit Problemdokumentation & Error-handling ab AR011026178 (auf dem remote-Rechner)
-# neuer Start mit geblockten Records & angepasstem Levensthein & anderem Vorgehen bei Language-Vergleich
-# (nicht den Titel des ursprungsrecords verwenden für language detection, sondern jeweils den eigenen Titel.)
-# Abgleich mit bereits geprüften Records einführen, um die Zeit zu verringern.
-# pre-check-records anpassen, sodass jeweils ein file nur mit vier anderen verglichen werden muss.
