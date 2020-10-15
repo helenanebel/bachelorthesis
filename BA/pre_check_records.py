@@ -139,6 +139,7 @@ for record_file_name in os.listdir('records_blocked'):
             record_list = [record for record in reader]
             for rec_nr in range(0, len(record_list), 18):
                 if start_evaluation:
+                    print(len(record_list))
                     if (rec_nr + 17) >= (len(record_list)):
                         print(rec_nr)
                         print([record_list[i] for i in range(rec_nr, len(record_list) - 1)])
