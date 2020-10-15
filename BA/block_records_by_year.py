@@ -2,7 +2,7 @@ from pymarc import MARCReader
 import re
 # hier die Records aus records_in_date_range in Blocks aufteilen.
 
-records_missing_date_file = open('records_missing_date.mrc', 'wb')
+records_missing_date_file = open('records_blocked/records_missing_date.mrc', 'wb')
 with open('records/records_in_date_range.mrc', 'rb') as file:
     reader = MARCReader(file, force_utf8=True)
     for record in reader:
