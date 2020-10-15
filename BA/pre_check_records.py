@@ -124,7 +124,7 @@ start_evaluation = True
 
 ray.init(num_cpus=18)
 for record_file_name in os.listdir('records_blocked'):
-    # print(record_file_name)
+    print(record_file_name)
     if re.findall(r'\d{4}', record_file_name):
         date = re.findall(r'\d{4}', record_file_name)[0]
         files_to_check = ['records_' + str(year) + '.mrc'
@@ -139,19 +139,14 @@ for record_file_name in os.listdir('records_blocked'):
             record_list = [record for record in reader]
             for rec_nr in range(0, len(record_list), 18):
                 if start_evaluation:
-                    print(len(record_list))
                     if (rec_nr + 17) >= (len(record_list)):
-                        print(rec_nr)
-                        print([record_list[i] for i in range(rec_nr, len(record_list))])
                         possible_doublets = [check_record.remote(record_list[i], files_to_check) for i in
                                              range(rec_nr, len(record_list))]
                         possible_doublet_dicts = ray.get(possible_doublets)
-                        print(possible_doublet_dicts)
                         record_file_name = record_file_name.replace('.mrc', '')
                         filename = record_file_name + '_' + str(rec_nr)
                         with open(filename, 'w') as file:
                             for doublet_dict in possible_doublet_dicts:
-                                print(doublet_dict)
                                 file.write(str(doublet_dict) + '\n')
                     else:
                         possible_doublets = [check_record.remote(record_list[i], files_to_check) 
