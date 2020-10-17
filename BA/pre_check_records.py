@@ -6,7 +6,7 @@ from nltk.corpus import stopwords
 import unidecode
 from langdetect import detect
 import ray
-from datetime import datetime
+import math
 import re
 
 stopwords_dict = {'de': stopwords.words('german'), 'en': stopwords.words('english'), 'fr': stopwords.words('french'),
@@ -100,7 +100,7 @@ def check_record(record, files_to_check):
                                                                  in RegexpTokenizer(r'\w+').tokenize(title_for_comparison)
                                                                  if len(word) > 1][:10])
                             found_words = 0
-                            sufficient_word_number = int(len(title_word_list) / 2)
+                            sufficient_word_number = math.ceil(len(title_word_list) / 2)
                             if not sufficient_word_number:
                                 sufficient_word_number = 1
                             for word in title_word_list:
