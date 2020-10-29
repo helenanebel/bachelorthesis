@@ -103,13 +103,20 @@ def check_record(record, files_to_check):
                             sufficient_word_number = math.ceil(len(title_word_list) / 2)
                             if not sufficient_word_number:
                                 sufficient_word_number = 1
+                            if len(title_word_list) == 2:
+                                sufficient_word_number = 2
                             for word in title_word_list:
                                 if found_words == sufficient_word_number:
                                     break
                                 for word_for_comparison in title_for_comparison_word_list:
-                                    if iterative_levenshtein(word, word_for_comparison) <= (len(word) / 3):
-                                        found_words += 1
-                                        break
+                                    if len(title_word_list) in [1, 2]:
+                                        if iterative_levenshtein(word, word_for_comparison) <= (len(word) / 2):
+                                            found_words += 1
+                                            break
+                                    else:
+                                        if iterative_levenshtein(word, word_for_comparison) <= (len(word) / 3):
+                                            found_words += 1
+                                            break
                             if found_words >= sufficient_word_number:
                                 possible_doublets.append(new_record['001'].data)
                                 break
