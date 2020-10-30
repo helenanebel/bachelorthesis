@@ -79,7 +79,7 @@ def check_record(record, files_to_check):
         except:
             language = 'xx'
         title = unidecode.unidecode(title)
-        title = title.split(". - ")[0].split(".- ").split(" / ")
+        title = title.split(". - ")[0].split(".- ")[0].split(" / ")[0]
         title_word_list = lower_list([word for word in RegexpTokenizer(r'\w+').tokenize(title) if len(word) > 1])
         title_word_list = [word for word in title_word_list
                               if word not in (stopwords_dict[language] if
