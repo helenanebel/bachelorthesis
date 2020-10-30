@@ -79,6 +79,7 @@ def check_record(record, files_to_check):
         except:
             language = 'xx'
         title = unidecode.unidecode(title)
+        title = title.split(". - ")[0].split(".- ").split(" / ")
         title_word_list = lower_list([word for word in RegexpTokenizer(r'\w+').tokenize(title) if len(word) > 1])
         title_word_list = [word for word in title_word_list
                               if word not in (stopwords_dict[language] if
@@ -101,8 +102,6 @@ def check_record(record, files_to_check):
                                                                  if len(word) > 1][:10])
                             found_words = 0
                             sufficient_word_number = math.ceil(len(title_word_list) / 2)
-                            if not sufficient_word_number:
-                                sufficient_word_number = 1
                             if len(title_word_list) == 2:
                                 sufficient_word_number = 2
                             for word in title_word_list:
@@ -130,7 +129,7 @@ start_evaluation = True
 # starting_record_nr = 'AR011026178'
 
 ray.init(num_cpus=18)
-for record_file_name in os.listdir('records_blocked'):
+for record_file_name in ["records_1968.mrc", "records_1967.mrc", "records_1969.mrc", "records_missing_date.mrc"]:
     print(record_file_name)
     if re.findall(r'\d{4}', record_file_name):
         date = re.findall(r'\d{4}', record_file_name)[0]
@@ -156,7 +155,7 @@ for record_file_name in os.listdir('records_blocked'):
                             for doublet_dict in possible_doublet_dicts:
                                 file.write(str(doublet_dict) + '\n')
                     else:
-                        possible_doublets = [check_record.remote(record_list[i], files_to_check) 
+                        possible_doublets = [check_record.remote(record_list[i], files_to_check)
                         for i in range(rec_nr, rec_nr + 18)]
                         possible_doublet_dicts = ray.get(possible_doublets)
                         record_file_name = record_file_name.replace('.mrc', '')
