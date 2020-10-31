@@ -99,7 +99,10 @@ def check_record(record, files_to_check):
                             title_for_comparison = unidecode.unidecode(title_for_comparison)
                             title_for_comparison_word_list = lower_list([word for word
                                                                  in RegexpTokenizer(r'\w+').tokenize(title_for_comparison)
-                                                                 if len(word) > 1][:10])
+                                                                 if len(word) > 1])
+                            title_for_comparison_word_list = [word for word in title_for_comparison_word_list
+                                                              if word not in (stopwords_dict[language] if
+                                                                              language in stopwords_dict else [])][:10]
                             found_words = 0
                             sufficient_word_number = math.ceil(len(title_word_list) / 2)
                             if len(title_word_list) == 2:
