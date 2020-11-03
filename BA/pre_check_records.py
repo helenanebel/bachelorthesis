@@ -132,15 +132,12 @@ start_evaluation = True
 # starting_record_nr = 'AR011026178'
 
 ray.init(num_cpus=18)
-for record_file_name in ["records_1968.mrc", "records_1967.mrc", "records_1969.mrc", "records_missing_date.mrc"]:
+for record_file_name in os.listdir('records_blocked'):
     print(record_file_name)
-    if re.findall(r'\d{4}', record_file_name):
-        date = re.findall(r'\d{4}', record_file_name)[0]
-        files_to_check = ['records_' + str(year) + '.mrc'
-                          for year in range(int(date) - 1, int(date) + 2) if (1966 < year < 1970)] \
-                         + ['records_missing_date.mrc']
-    else:
+    if record_file_name == "records_1968.mrc":
         files_to_check = os.listdir('records_blocked')
+    else:
+        files_to_check = ["records_1968.mrc"]
     with open('records_blocked/' + record_file_name, 'rb') as selected_record_file:
         try:
             print('starting')
