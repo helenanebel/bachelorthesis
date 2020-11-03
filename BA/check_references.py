@@ -90,9 +90,12 @@ to_delete_list = []
 
 with open('records_checked.json', 'r') as results_file:
     results = json.load(results_file)
-    for record_file_name in ['records_blocked/records_1968.mrc']:
-        files_to_check = os.listdir('records_blocked')
-        with open(record_file_name, 'rb') as selected_record_file:
+    for record_file_name in os.listdir('records_blocked'):
+        if record_file_name == 'records_1968.mrc':
+            files_to_check = os.listdir('records_blocked')
+        else:
+            files_to_check = 'records_1968.mrc'
+        with open('records_blocked/' + record_file_name, 'rb') as selected_record_file:
             try:
                 print('starting')
                 reader = MARCReader(selected_record_file, force_utf8=True)
@@ -129,5 +132,3 @@ for item in to_delete_list:
 
 with open('records_checked.json', 'w') as results_file:
     json.dump(results, results_file)
-
-# ["000035385", "000982211"] bis hier nochmal nachchecken in records_1968.mrc
