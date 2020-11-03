@@ -137,7 +137,7 @@ for record_file_name in ["records_1968.mrc", "records_1967.mrc", "records_1969.m
     if re.findall(r'\d{4}', record_file_name):
         date = re.findall(r'\d{4}', record_file_name)[0]
         files_to_check = ['records_' + str(year) + '.mrc'
-                          for year in range(int(date) - 1, int(date) + 2) if (1959 < year < 1970)] \
+                          for year in range(int(date) - 1, int(date) + 2) if (1966 < year < 1970)] \
                          + ['records_missing_date.mrc']
     else:
         files_to_check = os.listdir('records_blocked')
