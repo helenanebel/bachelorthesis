@@ -15,6 +15,7 @@ def check_record(record, files_to_check, results, stop_evaluation, last_comparis
                              if field.tag not in ['245', '246', '260', '264', '100']])):
             record_for_print.remove_fields(tag)
         results[record_id] = list(set(results[record_id]))
+        print(results[record_id])
         if len(results[record_id]) == 0:
             print(record_for_print)
             last_checked = False
@@ -94,7 +95,7 @@ with open('records_checked.json', 'r') as results_file:
         if record_file_name == 'records_1968.mrc':
             files_to_check = os.listdir('records_blocked')
         else:
-            files_to_check = 'records_1968.mrc'
+            files_to_check = ['records_1968.mrc']
         with open('records_blocked/' + record_file_name, 'rb') as selected_record_file:
             try:
                 print('starting')
