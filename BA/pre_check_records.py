@@ -112,7 +112,7 @@ def check_record(record, files_to_check):
                                     break
                                 for word_for_comparison in title_for_comparison_word_list:
                                     if len(title_word_list) in [1, 2]:
-                                        if iterative_levenshtein(word, word_for_comparison) <= (len(word) / 2):
+                                        if iterative_levenshtein(word, word_for_comparison) <= (len(word) / 2.5):
                                             found_words += 1
                                             break
                                     else:
