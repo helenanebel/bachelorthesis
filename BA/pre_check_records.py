@@ -8,9 +8,13 @@ from langdetect import detect
 import ray
 import math
 import re
+import json
 
 stopwords_dict = {'de': stopwords.words('german'), 'en': stopwords.words('english'), 'fr': stopwords.words('french'),
                   'es': stopwords.words('spanish'), 'it': stopwords.words('italian'), 'nl': stopwords.words('dutch')}
+
+with open('stopword_languages.json', 'r') as languages_file:
+    languages_dict = json.load(languages_file)
 
 
 def lower_list(input_list):
@@ -72,11 +76,13 @@ def check_record(record, files_to_check):
     try:
         subfield_p = False
         record_id = record['001'].data
-        # print('checking record:', record_id)
         title = [field['a'] if field['a'] else '' for field in record.get_fields('245')][0] if record.get_fields('245') else ''
         title_for_language_detection = [field['a'] + ' ' + field['b'] if (field['a'] and field['b']) else field['a'] if field['a'] else '' for field in record.get_fields('245')][0] if record.get_fields('245') else ''
         try:
-            language = detect(title_for_language_detection)
+            if record_id in languages_dict:
+                language = languages_dict[record_id]
+            else:
+                language = detect(title_for_language_detection)
         except:
             language = 'xx'
         if record.get_fields('245'):
@@ -177,8 +183,3 @@ for record_file_name in os.listdir('records_blocked'):
         except Exception as e:
             write_error_to_logfile.write(e)
             print(e)
-
-# immer beide auf $p prüfen und dann einbeziehen
-# Bindestrich zwischen Worten entfernen als Alternative
-# ' al-' entfernen aus Titeln
-# bei über 7 Treffern die Systemnummer überprüfen.
