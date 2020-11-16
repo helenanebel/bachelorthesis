@@ -70,6 +70,7 @@ def iterative_levenshtein(s, t, costs=(1, 1, 1)):
 def check_record(record, files_to_check):
     possible_doublets = []
     try:
+        subfield_p = False
         record_id = record['001'].data
         # print('checking record:', record_id)
         title = [field['a'] if field['a'] else '' for field in record.get_fields('245')][0] if record.get_fields('245') else ''
@@ -78,12 +79,19 @@ def check_record(record, files_to_check):
             language = detect(title_for_language_detection)
         except:
             language = 'xx'
+        if record.get_fields('245'):
+            if record['245']['p']:
+                subfield_p = True
         title = unidecode.unidecode(title)
+        title = title.lower()
+        title = title.replace(' al-', ' ')
+        words_with_hyphen = re.findall(r'[a-z]+[-][a-z]+', title)
+        print(words_with_hyphen)
         title = title.split(". - ")[0].split(".- ")[0].split(" / ")[0]
-        title_word_list = lower_list([word for word in RegexpTokenizer(r'\w+').tokenize(title) if len(word) > 1])
+        title_word_list = [word for word in RegexpTokenizer(r'\w+').tokenize(title) if len(word) > 1]
         title_word_list = [word for word in title_word_list
                               if word not in (stopwords_dict[language] if
-                                              language in stopwords_dict else [])][:7]
+                                              language in stopwords_dict else [])][:7] + words_with_hyphen
         for file in files_to_check:
             # print(file)
             with open('records_blocked/' + file, 'rb') as second_file:
@@ -91,9 +99,12 @@ def check_record(record, files_to_check):
                 for new_record in new_reader:
                     if record_id == new_record['001'].data:
                         continue
-                    titles_for_comparison = [field['a'] + ' ' + field['b']
-                                                 if (field['b'] and field['a']) else field['a']
-                                                 for field in new_record.get_fields('245', '246')]
+                    titles_for_comparison = [field['a'] + ' ' + field['b'] + ' ' + field['p']
+                                             if (field['b'] and field['a'] and field['p'] and subfield_p)
+                                             else field['a'] + ' ' + field['b'] if (field['b'] and field['a'])
+                                             else field['a'] + ' ' + field['p']
+                                             if (field['p'] and field['a'] and subfield_p)
+                                             else field['a'] for field in new_record.get_fields('245', '246')]
                     for title_for_comparison in titles_for_comparison:
                         if title_for_comparison:
                             title_for_comparison = unidecode.unidecode(title_for_comparison)
@@ -166,3 +177,8 @@ for record_file_name in os.listdir('records_blocked'):
         except Exception as e:
             write_error_to_logfile.write(e)
             print(e)
+
+# immer beide auf $p prüfen und dann einbeziehen
+# Bindestrich zwischen Worten entfernen als Alternative
+# ' al-' entfernen aus Titeln
+# bei über 7 Treffern die Systemnummer überprüfen.
