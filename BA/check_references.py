@@ -7,6 +7,7 @@ import copy
 
 def check_record(record, files_to_check, results, stop_evaluation, last_comparison):
     to_delete = []
+    last_checked = record['001'].data
     try:
         record_id = record['001'].data
         print('checking record:', record_id)
@@ -22,6 +23,7 @@ def check_record(record, files_to_check, results, stop_evaluation, last_comparis
         else:
             if record_id not in doublets:
                 doublets[record_id] = []
+            notice_new_record = input('Ein neuer Record wird bearbeitet: ')
             start_evaluation = False
             previously_checked = []
             for file in files_to_check:
